@@ -139,6 +139,8 @@ label{font-size:0.6em;text-transform:uppercase;letter-spacing:2px;color:#555;dis
 @keyframes float{0%,100%{transform:translateY(0)scale(1)}50%{transform:translateY(-30px)scale(1.5)}}
 @keyframes twinkle{50%{opacity:0.2}}
 @keyframes fly{0%,100%{transform:translate(0,0)}25%{transform:translate(100px,-50px)}50%{transform:translate(-50px,-100px)}75%{transform:translate(-100px,50px)}}
+@keyframes pulseBg{50%{background:rgba(255,0,85,0.02)}}
+@keyframes glitchBg{0%,100%{transform:translate(0)}20%{transform:translate(-3px,3px)}40%{transform:translate(3px,-3px)}60%{transform:translate(-1px,1px)}80%{transform:translate(1px,-1px)}}
 </style></head><body>
 <div class="container">
 <div class="header">
@@ -215,11 +217,11 @@ label{font-size:0.6em;text-transform:uppercase;letter-spacing:2px;color:#555;dis
 </div>
 
 <script>
-let proxyOn=false,rateOn=false;
+var proxyOn=false,rateOn=false;
 function toggleProxy(){proxyOn=!proxyOn;document.getElementById('proxyToggle').classList.toggle('on',proxyOn);document.getElementById('proxyLabel').textContent=proxyOn?'ON':'OFF'}
 function toggleRate(){rateOn=!rateOn;document.getElementById('rateToggle').classList.toggle('on',rateOn);document.getElementById('rateLabel').textContent=rateOn?'ON':'OFF'}
-function saveRate(){let rpm=document.getElementById('rpm').value;fetch('/rate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:rateOn,rpm:parseInt(rpm)})})}
-function saveProxies(){let p=document.getElementById('customProxies').value;fetch('/save_proxies',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({proxies:p})}).then(r=>r.json())}
+function saveRate(){var rpm=document.getElementById('rpm').value;fetch('/rate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:rateOn,rpm:parseInt(rpm)})})}
+function saveProxies(){var p=document.getElementById('customProxies').value;fetch('/save_proxies',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({proxies:p})}).then(function(r){return r.json()})}
 function setEffect(e){fetch('/effect/'+e).then(function(){document.querySelectorAll('.effect-opt').forEach(function(el){el.classList.remove('active')});event.target.classList.add('active');applyFx(e)})}
 function applyFx(e){var b=document.body;document.querySelectorAll('.fx').forEach(function(el){el.remove()});b.style.animation='';b.style.boxShadow='';
 if(e==='snow'){for(var i=0;i<30;i++){var d=document.createElement('div');d.className='fx';d.style.cssText='position:fixed;color:#ff0055;font-size:'+(Math.random()*10+8)+'px;left:'+Math.random()*100+'%;animation:fall '+Math.random()*5+3+'s linear infinite;pointer-events:none;z-index:0;opacity:0.5';d.innerHTML='❄️';b.appendChild(d)}}
@@ -236,12 +238,12 @@ function resetStats(){fetch('/reset',{method:'POST'}).then(function(){u()})}
 function copyIP(){var ip=document.getElementById('browserIP').textContent;navigator.clipboard.writeText(ip)}
 function u(){fetch('/stats').then(function(r){return r.json()}).then(function(d){document.getElementById('success').textContent=d.success;document.getElementById('failed').textContent=d.failed;document.getElementById('total').textContent=d.total;document.getElementById('ltSuccess').textContent=d.lt_success;document.getElementById('ltTotal').textContent=d.lt_total})}
 function l(){fetch('/logs').then(function(r){return r.json()}).then(function(d){document.getElementById('logs').innerHTML=d.logs.map(function(x){return'<div class="log-e">'+x+'</div>'}).join('')})}
-function start(){var urls=document.getElementById('urls').value.split('\\n').filter(function(u){return u.trim()});var count=document.getElementById('count').value;var speed=document.getElementById('speed').value;var mode=document.getElementById('mode').value;if(urls.length==0)return;fetch('/attack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({urls:urls,count:parseInt(count),speed:speed,mode:mode,proxy:proxyOn})}).then(function(r){return r.json()}).then(function(d){document.getElementById('status').innerHTML='<span class="badge badge-active">ACTIVE</span>';l();u()})}
+function start(){var urls=document.getElementById('urls').value.split('\\n').filter(function(u){return u.trim()});var count=document.getElementById('count').value;var speed=document.getElementById('speed').value;var mode=document.getElementById('mode').value;if(urls.length===0)return;fetch('/attack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({urls:urls,count:parseInt(count),speed:speed,mode:mode,proxy:proxyOn})}).then(function(r){return r.json()}).then(function(d){document.getElementById('status').innerHTML='<span class="badge badge-active">ACTIVE</span>';l();u()})}
 function stop(){fetch('/stop',{method:'POST'}).then(function(){document.getElementById('status').innerHTML='<span style="color:#666">Terminated</span>';l()})}
 fetch('https://api.ipify.org?format=json').then(function(r){return r.json()}).then(function(d){document.getElementById('browserIP').textContent=d.ip})
+applyFx('snow');
 setInterval(function(){l();u();document.getElementById('liveTime').textContent=new Date().toLocaleTimeString()},1500)
 </script>
-<style>@keyframes pulseBg{50%{background:rgba(255,0,85,0.02)}}@keyframes glitchBg{0%,100%{transform:translate(0)}20%{transform:translate(-3px,3px)}40%{transform:translate(3px,-3px)}60%{transform:translate(-1px,1px)}80%{transform:translate(1px,-1px)}}</style>
 </body></html>"""
 
 # ============================================
