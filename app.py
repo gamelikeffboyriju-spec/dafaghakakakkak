@@ -41,12 +41,12 @@ EFFECTS = ["snow","matrix","particles","neon","firefly","glitch","pulse","scanli
 current_effect = "snow"
 
 LOGIN = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>BRONX FLASH v20</title>
+LOGIN = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>BRONX FLASH v20</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden}
 body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(255,0,85,0.05) 1px,transparent 1px);background-size:35px 35px;animation:bgMove 20s linear infinite}
 @keyframes bgMove{0%{transform:translate(0)}100%{transform:translate(35px,35px)}}
-.effect-layer{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
 .box{background:rgba(5,0,10,0.97);padding:50px;border-radius:24px;border:1px solid rgba(255,0,85,0.2);width:420px;text-align:center;z-index:1;box-shadow:0 0 100px rgba(255,0,85,0.15),0 0 200px rgba(0,200,255,0.05);animation:pulseBox 3s infinite}
 @keyframes pulseBox{50%{box-shadow:0 0 150px rgba(255,0,85,0.3),0 0 250px rgba(0,200,255,0.1)}}
 .logo{font-size:4em;animation:glow 2s infinite}@keyframes glow{50%{filter:drop-shadow(0 0 30px rgba(255,0,85,0.8))}}
@@ -58,11 +58,7 @@ input:focus{border-color:#ff0055;box-shadow:0 0 30px rgba(255,0,85,0.2);outline:
 .btn:hover{box-shadow:0 0 60px rgba(255,0,85,0.7);transform:translateY(-3px)}.btn:active{transform:scale(0.95)}
 .btn::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,255,255,0.2),transparent);animation:btnShine 2s infinite}
 @keyframes btnShine{0%{transform:translateX(-100%) rotate(45deg)}100%{transform:translateX(100%) rotate(45deg)}}
-@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
-@keyframes float{0%,100%{transform:translateY(0)scale(1)}50%{transform:translateY(-30px)scale(1.5)}}
-@keyframes pulseNeon{50%{opacity:0.6}}@keyframes twinkle{50%{opacity:0.2}}
 </style></head><body>
-<div class="effect-layer" id="effects"></div>
 <div class="box">
 <div class="logo">💀</div>
 <h1>BRONX FLASH</h1>
@@ -75,6 +71,7 @@ input:focus{border-color:#ff0055;box-shadow:0 0 30px rgba(255,0,85,0.2);outline:
 </form>
 {% if error %}<p style="color:#ff0055;margin-top:10px">{{ error }}</p>{% endif %}
 </div>
+</body></html>"""
 <script>
 (function(){
 var e='{{ effect }}';var el=document.getElementById('effects');
