@@ -103,9 +103,9 @@ label{font-size:0.65em;text-transform:uppercase;letter-spacing:2px;color:#666;di
 <h3>🎯 Target Configuration</h3>
 <label>Target URLs (One per line)</label>
 <textarea id="urls" rows="4" placeholder="https://api.target1.com&#10;https://api.target2.com&#10;https://api.target3.com"></textarea>
-<div class="row"><div><label>Requests per URL</label><input type="number" id="count" value="1000"></div><div><label>Speed Mode</label><select id="speed"><option value="flash">⚡ Flash (0ms)</option><option value="fast">Fast (10ms)</option><option value="normal">Normal (50ms)</option></select></div></div>
+<div class="row"><div><label>Requests per URL</label><input type="number" id="count" value="1000"></div><div><label>Speed Mode</label><select id="speed"><option value="flash">🥵 NORMAL (50ms)</option><option value="fast">Fast (10ms)</option><option value="normal">Flash Speed ⚡ (00ms)</option></select></div></div>
 <button class="btn" onclick="start()">Launch Attack</button>
-<button class="btn btn-danger" onclick="stop()">Terminate</button>
+<button class="btn btn-danger" onclick="stop()">stop</button>
 <div id="status" style="margin-top:8px"></div>
 </div>
 
@@ -123,8 +123,8 @@ label{font-size:0.65em;text-transform:uppercase;letter-spacing:2px;color:#666;di
 </div>
 </div>
 
-<div class="card"><h3>📜 Battle Logs</h3><div class="logs" id="logs"><div class="log-entry">System ready. Awaiting command...</div></div></div>
-<div class="footer">BRONX FLASH v10 • EDUCATIONAL USE ONLY</div>
+<div class="card"><h3>📜 DDOS Logs</h3><div class="logs" id="logs"><div class="log-entry">System ready. Awaiting command...</div></div></div>
+<div class="footer">BRONX FLASH v10 • HACKER</div>
 </div>
 
 <script>
