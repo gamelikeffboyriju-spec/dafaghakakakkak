@@ -405,16 +405,33 @@ def save_proxies_global():
     d = request.get_json()
     raw = d.get('proxies', '')
     
-    # 🔥 FIXED: Split by newline, comma, semicolon, or space
-    proxy_list = re.split(r'[\n,;\s]+', raw)
+    # 🔥 FIXED: Pehle newline se split karo, phir clean karo
+    lines = raw.replace('\r\n', '\n').replace('\r', '\n').split('\n')
     
     custom_proxies = []
-    for p in proxy_list:
-        p = p.strip()
-        if p and ':' in p and len(p) > 8:
-            custom_proxies.append(p)
+    for line in lines:
+        line = line.strip()
+        # Skip empty lines
+        if not line:
+            continue
+        # Agar ek line me multiple proxies space separated hain to unko bhi split karo
+        if ' ' in line and '://' not in line.split(' ')[0]:
+            # Space separated proxies in one line
+            parts = line.split()
+            for part in parts:
+                part = part.strip()
+                if part and ':' in part and len(part) > 8:
+                    custom_proxies.append(part)
+        else:
+            # Single proxy per line
+            if line and ':' in line and len(line) > 8:
+                custom_proxies.append(line)
     
-    attack_logs.append(f"💾 {len(custom_proxies)} global proxies saved")
+    # Remove duplicates
+    custom_proxies = list(dict.fromkeys(custom_proxies))
+    
+    attack_logs.append(f"💾 {len(custom_proxies)} proxies saved (duplicates removed)")
+    
     return jsonify({
         "status": "ok",
         "count": len(custom_proxies),
