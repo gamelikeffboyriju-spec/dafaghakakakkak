@@ -405,30 +405,43 @@ def save_proxies_global():
     d = request.get_json()
     raw = d.get('proxies', '')
     
-    # 🔥 FIXED: Pehle newline se split karo, phir clean karo
+    custom_proxies = []
+    
+    # 🔥 METHOD 1: Split by newline first
     lines = raw.replace('\r\n', '\n').replace('\r', '\n').split('\n')
     
-    custom_proxies = []
     for line in lines:
         line = line.strip()
-        # Skip empty lines
         if not line:
             continue
-        # Agar ek line me multiple proxies space separated hain to unko bhi split karo
-        if ' ' in line and '://' not in line.split(' ')[0]:
-            # Space separated proxies in one line
-            parts = line.split()
-            for part in parts:
-                part = part.strip()
-                if part and ':' in part and len(part) > 8:
-                    custom_proxies.append(part)
-        else:
-            # Single proxy per line
-            if line and ':' in line and len(line) > 8:
-                custom_proxies.append(line)
+        
+        # 🔥 METHOD 2: Check if line contains multiple proxies
+        # Split by 'socks5://', 'socks4://', 'http://', 'https://'
+        # But keep the protocol prefix
+        
+        # Find all proxy patterns in the line
+        import re
+        # Pattern matches: socks5://ip:port, socks4://ip:port, http://ip:port, https://ip:port
+        # Also matches bare ip:port format
+        patterns = re.findall(r'(?:(?:socks[45]|https?)://)?\d+\.\d+\.\d+\.\d+:\d+', line)
+        
+        for proxy in patterns:
+            proxy = proxy.strip()
+            if proxy and len(proxy) > 8:
+                # Ensure it has protocol prefix
+                if not proxy.startswith(('socks5://', 'socks4://', 'http://', 'https://')):
+                    proxy = 'socks5://' + proxy
+                custom_proxies.append(proxy)
     
-    # Remove duplicates
-    custom_proxies = list(dict.fromkeys(custom_proxies))
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_proxies = []
+    for p in custom_proxies:
+        if p not in seen:
+            seen.add(p)
+            unique_proxies.append(p)
+    
+    custom_proxies = unique_proxies
     
     attack_logs.append(f"💾 {len(custom_proxies)} proxies saved (duplicates removed)")
     
